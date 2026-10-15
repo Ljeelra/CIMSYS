@@ -31,7 +31,7 @@ select is((select role::text from public.profiles where email = 't.eng@ablearn.k
 select is((select role::text from public.profiles where email = 't.viewer@ablearn.kr'), 'viewer',
           '역할 지정이 없으면 viewer');
 select throws_ok(
-  $$ insert into auth.users (email) values ('outsider@gmail.com') $$,
+  $$ insert into auth.users (id, email) values (gen_random_uuid(), 'outsider@gmail.com') $$,
   '23514', null, '회사 도메인이 아닌 이메일은 가입 불가');
 
 -- 관리자: 시드의 admin (없으면 생성)
