@@ -34,7 +34,7 @@ git push -u origin main
 - **Allow new users to sign up: 끄기** ← 관리자 초대로만 계정 생성
 
 **Authentication → URL Configuration**
-- Site URL: Vercel 운영 주소 (예: `https://cimsys.vercel.app`)
+- Site URL: `https://cimsys.vercel.app`
 - Redirect URLs 에 추가:
   - `https://<Vercel 운영 주소>/set-password`
   - `http://localhost:5173/set-password` (로컬 개발용)
@@ -66,7 +66,7 @@ git push -u origin main
 > npx supabase link --project-ref qrgcauiomsozqoyxrkvo
 > npx supabase db push
 > npx supabase functions deploy
-> npx supabase secrets set SITE_URL=https://<Vercel 운영 주소>
+> npx supabase secrets set SITE_URL=https://cimsys.vercel.app
 > ```
 
 ### 2-3. 첫 관리자 만들기

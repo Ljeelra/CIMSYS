@@ -43,3 +43,9 @@ verify_jwt = true
 
 [functions.update-user]
 verify_jwt = true
+
+[functions.bulk-create-users]
+verify_jwt = true
+
+[functions.change-password]
+verify_jwt = true

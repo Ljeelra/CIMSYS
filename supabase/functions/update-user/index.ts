@@ -1,8 +1,11 @@
 // POST /functions/v1/update-user  (관리자 전용)
-// body: { user_id, role?, is_active?, name?, team?, title?, phone?, skills?, color? }
+// body: { user_id, role?, is_active?, name?, team?, title?, phone?, skills?, color?,
+//         reset_password?: { password?: string; must_change_password?: boolean } }
 //  - is_active=false: 로그인 차단(ban) + 배정 대상 제외. 과거 이력은 유지 (AUTH-04)
+//  - reset_password: 관리자가 임시 비밀번호로 재설정 (password 비우면 자동 생성해 응답으로 반환)
 import { requireRole } from "../_shared/auth.ts";
 import { corsHeaders, errorResponse, HttpError, json, readJson } from "../_shared/http.ts";
+import { generatePassword } from "../_shared/users.ts";
 
 interface Body {
   user_id?: string;
@@ -14,6 +17,7 @@ interface Body {
   phone?: string | null;
   skills?: string[];
   color?: number;
+  reset_password?: { password?: string; must_change_password?: boolean };
 }
 
 Deno.serve(async (req) => {
@@ -31,14 +35,23 @@ Deno.serve(async (req) => {
     for (const k of ["role", "is_active", "name", "team", "title", "phone", "skills", "color"] as const) {
       if (body[k] !== undefined) patch[k] = body[k];
     }
+
+    let newPassword: string | undefined;
+    if (body.reset_password) {
+      newPassword = body.reset_password.password || generatePassword();
+      if (newPassword.length < 8) throw new HttpError(400, "WEAK_PASSWORD", "비밀번호는 8자 이상이어야 합니다.");
+      const mustChange = body.reset_password.must_change_password ?? true;
+      const { error } = await admin.auth.admin.updateUserById(body.user_id, {
+        password: newPassword,
+        app_metadata: { must_change_password: mustChange },
+      });
+      if (error) throw new HttpError(400, "RESET_FAILED", error.message);
+      patch.must_change_password = mustChange;
+    }
+
     if (Object.keys(patch).length === 0) throw new HttpError(400, "BAD_REQUEST", "변경할 항목이 없습니다.");
 
-    const { data: profile, error } = await admin
-      .from("profiles")
-      .update(patch)
-      .eq("id", body.user_id)
-      .select()
-      .single();
+    const { data: profile, error } = await admin.from("profiles").update(patch).eq("id", body.user_id).select().single();
     if (error) {
       // 트리거 메시지(예: 마지막 관리자 보호)를 그대로 전달
       throw new HttpError(400, "UPDATE_FAILED", error.message);
@@ -50,7 +63,7 @@ Deno.serve(async (req) => {
       });
       if (banErr) throw new HttpError(500, "BAN_FAILED", banErr.message);
     }
-    return json({ profile });
+    return json({ profile, password: newPassword });
   } catch (e) {
     return errorResponse(e);
   }

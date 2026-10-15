@@ -6,6 +6,7 @@ import { Loading } from "./components/ui";
 import {
   ConnectionErrorPage,
   ForgotPasswordPage,
+  ForceChangePasswordPage,
   InactivePage,
   LoginPage,
   NotConfiguredPage,
@@ -25,6 +26,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!session) return <Navigate to="/login" replace />;
   if (profileError) return <ConnectionErrorPage error={profileError} onRetry={retryProfile} />;
   if (!profile?.is_active) return <InactivePage />;
+  if (profile.must_change_password) return <ForceChangePasswordPage />;
   return <>{children}</>;
 }
 

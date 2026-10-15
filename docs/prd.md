@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 문서 버전 | v1.2 (2026-10-15) — Edge Functions + Vercel 구성 확정, 0~2단계 구현 반영 |
+| 문서 버전 | v1.3 (2026-10-15) — 관리자 직접·일괄 사용자 추가, 첫 로그인 비밀번호 변경, 운영 주소 `cimsys.vercel.app` |
 | 작성 | 유니포인트 |
 | 상태 | 0~2단계 구현 완료, 3단계 착수 전 |
 | 기술 기반 | Supabase(DB·Auth·Storage·Edge Functions) + React 웹(Vercel), GitHub `Ljeelra/CIMSYS` + Actions CI/CD |
@@ -220,7 +220,7 @@
    │    └─ pgvector ..... (2차) 의미 기반 검색
    ├─ Realtime .......... 이슈·이력 변경 실시간 반영
    ├─ Storage ........... issue-attachments / reports / imports
-   └─ Edge Functions .... invite-user, update-user (service_role 사용)
+   └─ Edge Functions .... invite-user, bulk-create-users, update-user, change-password (service_role 사용)
                           (4~5단계) generate-report(PDF), import-data(엑셀 이관)
         ▲
 [GitHub  Ljeelra/CIMSYS] — PR마다 CI, main 반영 시 DB 마이그레이션·함수 자동 배포
@@ -488,7 +488,7 @@ CIMSYS/
 ├─ packages/shared/           # 공통 상수·타입·SLA 계산·날짜 포맷 (+ Vitest)
 ├─ supabase/
 │  ├─ migrations/             # 스키마·트리거·RLS·RPC·Storage·cron (SQL)
-│  ├─ functions/              # Edge Functions (invite-user, update-user)
+│  ├─ functions/              # Edge Functions (invite-user, bulk-create-users, update-user, change-password)
 │  ├─ tests/database/         # pgTAP 테스트
 │  ├─ seed.sql                # 로컬 개발용 예시 데이터 (운영 미적용)
 │  └─ config.toml
@@ -522,7 +522,7 @@ CIMSYS/
 | GitHub Secrets | `SUPABASE_ACCESS_TOKEN` | Supabase 계정 Access Token |
 | GitHub Secrets | `SUPABASE_DB_PASSWORD` | 프로젝트 DB 비밀번호 |
 | GitHub Secrets | `SUPABASE_PROJECT_REF` | `qrgcauiomsozqoyxrkvo` |
-| GitHub Secrets | `SITE_URL` | Vercel 운영 주소 |
+| GitHub Secrets | `SITE_URL` | `https://cimsys.vercel.app` |
 | Vercel 환경변수 | `VITE_SUPABASE_URL` | `https://qrgcauiomsozqoyxrkvo.supabase.co` |
 | Vercel 환경변수 | `VITE_SUPABASE_ANON_KEY` | 프로젝트 anon(public) 키 |
 
@@ -532,7 +532,7 @@ CIMSYS/
 ### 11.5 테스트 기준
 | 대상 | 도구 | 현황 |
 |---|---|---|
-| RLS·트리거·RPC | pgTAP | ✅ 48개 (역할별 허용·거부, 채번, SLA 기한·일시정지, 상태 전이, 이력 불변, 유사 추천, 고객사 저장) |
+| RLS·트리거·RPC | pgTAP | ✅ 52개 (역할별 허용·거부, 채번, SLA 기한·일시정지, 상태 전이, 이력 불변, 유사 추천, 고객사 저장, 비밀번호 변경 플래그) |
 | 공통 로직 | Vitest | ✅ 10개 (SLA 상태, 시간 표시, KST 변환, 태그) |
 | Edge Functions | deno check | ✅ 타입 검사 |
 | E2E | Playwright | 3단계에서 추가 |
@@ -557,9 +557,10 @@ CIMSYS/
 
 | # | 항목 | 결정 |
 |---|---|---|
-| 1 | 로그인 방식 | ✅ 이메일 + 비밀번호, 관리자 초대(초대 메일 또는 임시 비밀번호), `ablearn.kr` 도메인만 |
+| 1 | 로그인 방식 | ✅ 이메일 + 비밀번호. 관리자가 직접 추가(1명·일괄 최대 100명, 임시 비밀번호 자동 생성) 또는 초대 메일. 임시 비밀번호 계정은 첫 로그인 때 변경 강제. 관리자 비밀번호 재설정. `ablearn.kr`·`unipoint.co.kr` 도메인만 |
 | 2 | 서버·호스팅 | ✅ Supabase Edge Functions + Vercel(웹) |
 | 2-1 | 저장소 | ✅ GitHub `Ljeelra/CIMSYS` |
+| 2-2 | 운영 주소 | ✅ `https://cimsys.vercel.app` (기존 `cimsys-seven.vercel.app`은 자동 이동) |
 | 3 | Supabase 프로젝트 | ✅ `qrgcauiomsozqoyxrkvo` (리전·플랜은 대시보드에서 확인) |
 | 4 | 알림 채널 | MVP 인앱, 2차 메신저 (미정) |
 | 5 | SLA 시간 기준 | MVP 24시간 기준 |

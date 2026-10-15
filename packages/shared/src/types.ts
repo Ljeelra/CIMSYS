@@ -12,6 +12,8 @@ export interface Profile {
   skills: string[];
   color: number;
   is_active: boolean;
+  /** 관리자가 만든 임시 비밀번호 계정: 첫 로그인 때 변경 필요 */
+  must_change_password: boolean;
   created_at: string;
 }
 

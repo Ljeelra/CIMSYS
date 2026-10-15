@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { errorMessage } from "../lib/errors";
-import { supabase } from "../lib/supabase";
+import { callFunction, supabase } from "../lib/supabase";
 import { ErrorBox, Loading } from "../components/ui";
 
 function AuthCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
@@ -236,6 +236,71 @@ export function ConnectionErrorPage({ error, onRetry }: { error: unknown; onRetr
           로그아웃
         </button>
       </div>
+    </AuthCard>
+  );
+}
+
+/** 관리자가 만든 계정(임시 비밀번호)은 첫 로그인 때 비밀번호를 바꿔야 들어갈 수 있다. */
+export function ForceChangePasswordPage() {
+  const { session, signOut, retryProfile } = useAuth();
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (pw.length < 8) return setError("비밀번호는 8자 이상이어야 합니다.");
+    if (pw !== pw2) return setError("두 비밀번호가 일치하지 않습니다.");
+    setBusy(true);
+    try {
+      await callFunction("change-password", { password: pw });
+      retryProfile();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AuthCard
+      title="비밀번호 변경"
+      sub={`${session?.user.email ?? ""} 계정은 임시 비밀번호로 만들어졌습니다. 새 비밀번호를 정해야 시작할 수 있습니다.`}
+    >
+      <form onSubmit={submit}>
+        <div className="fld">
+          <label htmlFor="fc-1">새 비밀번호 (8자 이상)</label>
+          <input
+            id="fc-1"
+            type="password"
+            autoComplete="new-password"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            required
+            autoFocus
+          />
+        </div>
+        <div className="fld">
+          <label htmlFor="fc-2">새 비밀번호 확인</label>
+          <input
+            id="fc-2"
+            type="password"
+            autoComplete="new-password"
+            value={pw2}
+            onChange={(e) => setPw2(e.target.value)}
+            required
+          />
+        </div>
+        <ErrorBox error={error} />
+        <button className="btn primary" disabled={busy} style={{ justifyContent: "center" }}>
+          {busy ? "변경 중…" : "변경하고 시작하기"}
+        </button>
+        <button type="button" className="btn" onClick={signOut} style={{ justifyContent: "center" }}>
+          로그아웃
+        </button>
+      </form>
     </AuthCard>
   );
 }
