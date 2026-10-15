@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// VITE_* 를 우선 사용하고, 없으면 Vercel–Supabase 연동이 만든 NEXT_PUBLIC_* 값을 사용
+const url = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) as string | undefined;
+const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as
+  | string
+  | undefined;
 
 /** 환경변수가 없으면 화면에 설정 안내를 띄운다 */
 export const isConfigured = Boolean(url && anonKey);
