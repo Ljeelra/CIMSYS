@@ -3,7 +3,7 @@
 #   SUPABASE_ACCESS_TOKEN  : supabase.com → Account → Access Tokens 에서 발급
 #   SUPABASE_DB_PASSWORD   : 프로젝트 생성 시 정한 DB 비밀번호
 #   SUPABASE_PROJECT_REF   : qrgcauiomsozqoyxrkvo
-#   SITE_URL               : Vercel 운영 주소 (예: https://cimsys.vercel.app)
+#   SITE_URL               : (선택) 운영 주소. 비우면 https://cimsys.vercel.app
 name: Deploy Supabase
 
 on:
@@ -39,6 +39,8 @@ jobs:
       - name: DB 마이그레이션 적용
         run: supabase db push --password "$SUPABASE_DB_PASSWORD"
       - name: Edge Functions 비밀값
-        run: supabase secrets set SITE_URL="${{ secrets.SITE_URL }}" --project-ref "$PROJECT_REF"
+        env:
+          SITE_URL: ${{ secrets.SITE_URL || 'https://cimsys.vercel.app' }}
+        run: supabase secrets set SITE_URL="$SITE_URL" --project-ref "$PROJECT_REF"
       - name: Edge Functions 배포
         run: supabase functions deploy --project-ref "$PROJECT_REF"
