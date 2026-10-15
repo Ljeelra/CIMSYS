@@ -1,0 +1,27 @@
+{
+  "name": "issue-desk",
+  "private": true,
+  "description": "고객사 이슈 데스크 — 고객사 정보·이슈·SLA·지식베이스 사내 업무 시스템",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @issue-desk/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:test:local": "./scripts/test-db-local.sh",
+    "db:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts",
+    "functions:check": "cd supabase/functions && deno check */index.ts"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}

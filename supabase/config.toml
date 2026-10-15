@@ -1,0 +1,45 @@
+# Supabase CLI 설정 (로컬 개발용: `supabase start`)
+# 원격(dev/prod) 프로젝트의 인증 설정은 대시보드에서 동일하게 맞춘다 → docs/SETUP.md
+project_id = "issue-desk"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/set-password"]
+jwt_expiry = 3600
+# 회원가입 차단: 관리자 초대로만 계정 생성
+enable_signup = false
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+
+[functions.invite-user]
+verify_jwt = true
+
+[functions.update-user]
+verify_jwt = true
